@@ -28,60 +28,76 @@ This lab guides Tier 1 technicians through creating a shared mailbox in Microsof
 
 ```powershell
 Connect-ExchangeOnline -UserPrincipalName admin@yourdomain.com
+```
 
 ### 3️⃣ Create a Shared Mailbox
 
-
+```powershell
 New-Mailbox -Shared `
   -Name "T1 Lab Mailbox" `
   -DisplayName "T1 Lab Mailbox" `
   -Alias "t1lab" `
   -PrimarySmtpAddress "t1lab@domain.com"
+```
 
-
-  4️⃣ Define a List of Users to Assign Access
+### 4️⃣ Define a List of Users to Assign Access
 Optionally create a user list:
-
+```powershell
 $Users = @(
     "user1@domain.com",
     "user2@domain.com",
     "user3@domain.com"
 )
+```
 Then assign FullAccess permissions to each:
 
-
+```powershell
 foreach ($User in $Users) {
     Add-MailboxPermission -Identity "t1lab@domain.com" `
         -User $User `
         -AccessRights FullAccess `
         -InheritanceType All
 }
-5️⃣ Verify Mailbox Permissions
+```
+### 5️⃣ Verify Mailbox Permissions
 
+```powershell
 Get-MailboxPermission -Identity "t1lab@domain.com" |
   Where-Object { $_.User -notlike "NT AUTHORITY\SELF" } |
   Select User, AccessRights
-🔁 Optional: Lookup Users Before Assigning
-Using Microsoft Graph:
+```
+### 🔁 Optional: Lookup Users Before Assigning
 
+##### Using Microsoft Graph:
 
+```powershell
 Get-MgUser -Filter "startswith(UserPrincipalName,'user')"
 Using Azure AD:
+```
 
-
+```powershell
 Get-AzADUser -Filter "startswith(userPrincipalName,'user')"
+```
+or
+```powershell
+Get-AzADUser | Where-Object { $_.DisplayName -like "K*" }
+```
+
 Use one or the other depending on your available modules.
 
-🧹 Cleanup (Reverse Actions)
+### 🧹 Cleanup (Reverse Actions)
 Remove User Access
 
+```powershell
 foreach ($User in $Users) {
     Remove-MailboxPermission -Identity "t1lab@domain.com" `
         -User $User `
         -AccessRights FullAccess `
         -Confirm:$false
 }
+```
 Delete the Shared Mailbox
 
+```powershell
 Remove-Mailbox -Identity "t1lab@domain.com" -Confirm:$false
-
+```
